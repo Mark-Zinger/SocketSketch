@@ -1,0 +1,12 @@
+.canvas {
+    width: 80vw;
+    margin: 0 auto;
+    height: 80vh;
+    margin-top: 6vh;
+    overflow: hidden;
+}
+
+canvas {
+    /* height: 100%;
+    width: 100%; */
+}

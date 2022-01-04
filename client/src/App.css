@@ -4,3 +4,13 @@
   position: relative;
   background-color: #eeeeee;
 }
+
+input[type="color"] {
+  position: absolute;
+  top: -3px;
+  right: -5px;
+}
+
+.MuiSvgIcon-root path {
+  transition: fill .1s ease;
+}
