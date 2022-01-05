@@ -4,7 +4,9 @@ import BrushIcon from '@material-ui/icons/Brush';
 
 import rough from 'roughjs/bundled/rough.esm';
 import { store } from '../../../app/store';
-import { addElement, changeLastElement } from '../../../features/elementsSlice';
+import { addBufferElement, changeBufferElementById } from '../../../features/bufferElementsSlice';
+import { setSelectElement, getSelectedBufferElement } from '../../../features/selectedSlice';
+
 import { v4 } from 'uuid';
 import roughElements from '../../../app/roughElements';
 
@@ -24,36 +26,40 @@ export function Brush () {
 const generator = rough.generator();
 const optionList = ["stroke"];
 
-const createBrush = (args) => {
+const createBrush = (args,id) => {
     const {points, options} = args;
     const path = bzCurve(points);
     
     const roughElement = generator.path(path, {
         roughness: 0.5, strokeWidth: 1.3, ...options
     });
-    return [{ id: null, shape: 'brush', args }, roughElement];
+    
+    return [{ id, shape: 'brush', args }, roughElement];
 }
 
 const actions = {
     handleMouseDown: ([x1, y1], tool) => {
         const options = pickOptions(...optionList)(tool);
-        const [brush,roughElement] = createBrush({points: [[x1, y1]], options});
-        brush.id = v4();
+        const [element,roughElement] = createBrush({points: [[x1, y1]], options}, v4());
 
-        roughElements.set(brush.id, roughElement)
-        store.dispatch(addElement(brush));
+        roughElements.set(element.id, roughElement)
+        store.dispatch(setSelectElement(element.id))
+        store.dispatch(addBufferElement(element));
     },
     handleMouseMove: throttle(([x2, y2]) => {
-        const {id, args} = store.getState().elements.at(-1);
+        if(!getSelectedBufferElement()) return;
+        const {id, args} = getSelectedBufferElement();
         
-        const [brush,roughElement] = createBrush(
+        
+        const [element,roughElement] = createBrush(
             {
                 ...args, 
                 points: [...args.points, [x2, y2]],
-            }
+            }, id
         );
+
         roughElements.set(id, roughElement);
-        store.dispatch(changeLastElement({...brush, id}));
+        store.dispatch(changeBufferElementById(element));
     },30)
 }
 

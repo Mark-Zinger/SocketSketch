@@ -1,12 +1,13 @@
-.canvas {
+.canvas-container {
     width: 80vw;
     margin: 0 auto;
     height: 80vh;
     margin-top: 6vh;
     overflow: hidden;
+    position: relative;
 }
 
 canvas {
-    /* height: 100%;
-    width: 100%; */
+    position: absolute;
+    left: 0; top: 0;
 }

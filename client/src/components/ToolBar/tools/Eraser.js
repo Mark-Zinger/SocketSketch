@@ -4,7 +4,8 @@ import SvgIcon from '@material-ui/core/SvgIcon';
 
 import rough from 'roughjs/bundled/rough.esm';
 import { store } from '../../../app/store';
-import { addElement, changeLastElement } from '../../../features/elementsSlice';
+import { addBufferElement, changeBufferElementById } from '../../../features/bufferElementsSlice';
+import { setSelectElement, getSelectedBufferElement } from '../../../features/selectedSlice';
 import { v4 } from 'uuid';
 import roughElements from '../../../app/roughElements';
 
@@ -25,37 +26,39 @@ export function Eraser () {
 const generator = rough.generator();
 const optionList = []
 
-const createEraser = (args) => {
+const createEraser = (args, id) => {
     const {points, options} = args;
     const path = bzCurve(points);
     
     const roughElement = generator.path(path, {
         roughness: 0.5, strokeWidth: 8, ...options, stroke: "#ffffff"
     });
-    return [{ id: null, shape: 'eraser', args }, roughElement];
+    return [{ id, shape: 'eraser', args }, roughElement];
 }
 
 
 const actions = {
     handleMouseDown: ([x1, y1], tool) => {
         const options = pickOptions(...optionList)(tool);
-        const [eraser,roughElement] = createEraser({points: [[x1, y1]], options});
-        eraser.id = v4();
+        const [element,roughElement] = createEraser({points: [[x1, y1]], options}, v4());
 
-        roughElements.set(eraser.id, roughElement)
-        store.dispatch(addElement(eraser));
+        roughElements.set(element.id, roughElement)
+        store.dispatch(setSelectElement(element.id))
+        store.dispatch(addBufferElement(element));
     },
     handleMouseMove: throttle(([x2, y2]) => {
-        const {id, args} = store.getState().elements.at(-1);
+        if(!getSelectedBufferElement()) return;
+        const {id, args} = getSelectedBufferElement();
         
-        const [eraser,roughElement] = createEraser(
+        const [element,roughElement] = createEraser(
             {
                 ...args, 
                 points: [...args.points, [x2, y2]],
-            }
+            }, id
         );
+
         roughElements.set(id, roughElement);
-        store.dispatch(changeLastElement({...eraser, id}));
+        store.dispatch(changeBufferElementById(element));
     },30)
 }
 

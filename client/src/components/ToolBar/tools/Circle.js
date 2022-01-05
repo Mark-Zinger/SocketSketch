@@ -4,7 +4,8 @@ import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked';
 
 import rough from 'roughjs/bundled/rough.esm';
 import { store } from '../../../app/store';
-import { addElement, changeLastElement } from '../../../features/elementsSlice';
+import { addBufferElement, changeBufferElementById } from '../../../features/bufferElementsSlice';
+import { setSelectElement, getSelectedBufferElement } from '../../../features/selectedSlice';
 import { v4 } from 'uuid';
 import roughElements from '../../../app/roughElements';
 
@@ -22,26 +23,27 @@ export function Circle () {
 const generator = rough.generator();
 const optionList = ["stroke", "fill"];
 
-const createCircle = ({x1,y1,x2,y2, options}) => {
+const createCircle = ({x1,y1,x2,y2, options},id) => {
     const diameter = Math.sqrt( (x1-x2)**2 + (y1-y2)**2 )*2;
     const roughElement = generator.circle(x1,y1,diameter, options);
-    return [{ id: null, shape: 'circle', args: { x1, y1, x2, y2, options} }, roughElement];
+    return [{ id, shape: 'circle', args: { x1, y1, x2, y2, options} }, roughElement];
 }
 
 const actions = {
     handleMouseDown: ([x1, y1], tool) => {
         const options = pickOptions(...optionList)(tool)
 
-        const [circle,roughElement] = createCircle({x1, y1, x2:x1, y2:y1, options});
-        circle.id = v4();
-        roughElements.set(circle.id, roughElement)
-        store.dispatch(addElement(circle));
+        const [element,roughElement] = createCircle({x1, y1, x2:x1, y2:y1, options}, v4());
+
+        roughElements.set(element.id, roughElement)
+        store.dispatch(setSelectElement(element.id));
+        store.dispatch(addBufferElement(element));
     },
     handleMouseMove: ([x2, y2]) => {
-        const {id, args} = store.getState().elements.at(-1);
-        const [circle,roughElement] = createCircle({...args, x2, y2});
+        const {id, args} = getSelectedBufferElement();
+        const [element,roughElement] = createCircle({...args, x2, y2}, id);
         roughElements.set(id, roughElement);
-        store.dispatch(changeLastElement({...circle, id}));
+        store.dispatch(changeBufferElementById(element));
     }
 }
 
