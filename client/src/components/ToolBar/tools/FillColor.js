@@ -12,7 +12,7 @@ export default function FillColor () {
 
     const iconRef = useRef();
 
-    const color = useSelector(selectTool).fillColor;
+    const color = useSelector(selectTool).fill;
     const dispatch = useDispatch();
 
     const onChangeHandler =  useThrottle((e) => {

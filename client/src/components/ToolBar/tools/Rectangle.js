@@ -8,6 +8,9 @@ import { addElement, changeLastElement } from '../../../features/elementsSlice';
 import { v4 } from 'uuid';
 import roughElements from '../../../app/roughElements';
 
+import pickOptions from '../../../helpers/pickOptions';
+
+
 export function Rectangle () {
     return (
         <Tooltip title="Rectangle" placement="right">
@@ -17,16 +20,18 @@ export function Rectangle () {
 }
 
 const generator = rough.generator();
+const optionList = ["stroke", "fill"];
 
 const createRectangle = (args) => {
-    const {x1,y1,x2,y2} = args;
-    const roughElement = generator.rectangle(x1,y1,x2-x1,y2-y1);
+    const {x1,y1,x2,y2, options} = args;
+    const roughElement = generator.rectangle(x1,y1,x2-x1,y2-y1, options);
     return [{ id: null, shape: 'rectangle', args }, roughElement];
 }
 
 const actions = {
-    handleMouseDown: ([x1, y1]) => {
-        const [rect,roughElement] = createRectangle({x1, y1, x2:x1, y2:y1});
+    handleMouseDown: ([x1, y1], tool) => {
+        const options = pickOptions(...optionList)(tool)
+        const [rect,roughElement] = createRectangle({x1, y1, x2:x1, y2:y1, options});
         rect.id = v4();
         roughElements.set(rect.id, roughElement)
         store.dispatch(addElement(rect));

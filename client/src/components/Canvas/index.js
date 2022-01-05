@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from 'react'
+import React, {useCallback, useRef, useEffect} from 'react'
 import { useSelector, useDispatch } from 'react-redux';
 import rough from 'roughjs/bundled/rough.esm';
 import Paper from '@mui/material/Paper';
@@ -10,7 +10,6 @@ import { setDrawing } from '../../features/drawingSlice';
 
 import getPoint from '../../helpers/getPoint';
 import roughElements from '../../app/roughElements';
-
 
 
 const toolsActions = {};
@@ -32,17 +31,21 @@ export default function Canvas () {
 
         ctx.clearRect(0, 0,canvas.width, canvas.height);
         elements.forEach(({id}) => rc.draw(roughElements.get(id)));
-    
+
     },[elements])
  
-    const handleMouseDown = (event) => {
+    const handleMouseDown = useCallback((event) => {
         dispatch(setDrawing(true));
-        toolsActions[tool.name].handleMouseDown(getPoint(event));
-    };
+        const point = getPoint(event);
+        toolsActions[tool.name].handleMouseDown(point, tool);
+    },[tool]);
 
-    const handleMouseMove = (event) => {
-        if(drawing) toolsActions[tool.name].handleMouseMove(getPoint(event));
-    };
+    const handleMouseMove = useCallback((event) => {
+        if(drawing) {
+            const point = getPoint(event)
+            toolsActions[tool.name].handleMouseMove(point, tool);
+        }
+    },[tool, drawing]);
 
     const handleMouseUp = () => {
         dispatch(setDrawing(false));

@@ -8,6 +8,8 @@ import { addElement, changeLastElement } from '../../../features/elementsSlice';
 import { v4 } from 'uuid';
 import roughElements from '../../../app/roughElements';
 
+import pickOptions from '../../../helpers/pickOptions';
+
 
 export function Line () {
     return (
@@ -18,16 +20,19 @@ export function Line () {
 }
 
 const generator = rough.generator();
+const optionList = ["stroke"];
 
 const createLine = (args) => {
-    const {x1,y1,x2,y2} = args;
-    const roughElement = generator.line(x1,y1,x2,y2);
+    const {x1,y1,x2,y2, options} = args;
+    const roughElement = generator.line(x1,y1,x2,y2, options);
     return [{ id: null, shape: 'line', args }, roughElement];
 }
 
 const actions = {
-    handleMouseDown: ([x1, y1]) => {
-        const [line,roughElement] = createLine({x1, y1, x2:x1, y2:y1});
+    handleMouseDown: ([x1, y1], tool) => {
+        const options = pickOptions(...optionList)(tool)
+
+        const [line,roughElement] = createLine({x1, y1, x2:x1, y2:y1, options});
         line.id = v4();
         roughElements.set(line.id, roughElement)
         store.dispatch(addElement(line));

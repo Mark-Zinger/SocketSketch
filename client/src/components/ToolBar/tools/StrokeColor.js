@@ -12,7 +12,7 @@ export default function StrokeColor () {
 
     const iconRef = useRef();
     
-    const color = useSelector(selectTool).strokeColor;
+    const color = useSelector(selectTool).stroke;
     const dispatch = useDispatch();
 
     const onChangeHandler =  useThrottle((e) => {

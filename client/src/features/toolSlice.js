@@ -3,8 +3,8 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   name: "brush",
   lineWidth: 2,
-  strokeColor: "#B0FF92",
-  fillColor: "#D6FF79"
+  stroke: "#B0FF92",
+  fill: "#D6FF79"
 };
 
 
@@ -19,10 +19,10 @@ export const toolSlice = createSlice({
       state.lineWidth = parseInt(action.payload)
     },
     setStrokeColor: (state, action) => {
-      state.strokeColor = action.payload;
+      state.stroke = action.payload;
     },
     setFillColor: (state, action) => {
-      state.fillColor = action.payload;
+      state.fill = action.payload;
     },
   }, 
 });

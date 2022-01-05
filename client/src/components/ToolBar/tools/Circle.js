@@ -8,6 +8,9 @@ import { addElement, changeLastElement } from '../../../features/elementsSlice';
 import { v4 } from 'uuid';
 import roughElements from '../../../app/roughElements';
 
+import pickOptions from '../../../helpers/pickOptions';
+
+
 export function Circle () {
     return (
         <Tooltip title="Circle" placement="right">
@@ -17,17 +20,19 @@ export function Circle () {
 }
 
 const generator = rough.generator();
+const optionList = ["stroke", "fill"];
 
-const createCircle = ({x1,y1,x2,y2}) => {
+const createCircle = ({x1,y1,x2,y2, options}) => {
     const diameter = Math.sqrt( (x1-x2)**2 + (y1-y2)**2 )*2;
-
-    const roughElement = generator.circle(x1,y1,diameter);
-    return [{ id: null, shape: 'circle', args: { x1, y1, x2, y2 } }, roughElement];
+    const roughElement = generator.circle(x1,y1,diameter, options);
+    return [{ id: null, shape: 'circle', args: { x1, y1, x2, y2, options} }, roughElement];
 }
 
 const actions = {
-    handleMouseDown: ([x1, y1]) => {
-        const [circle,roughElement] = createCircle({x1, y1, x2:x1, y2:y1});
+    handleMouseDown: ([x1, y1], tool) => {
+        const options = pickOptions(...optionList)(tool)
+
+        const [circle,roughElement] = createCircle({x1, y1, x2:x1, y2:y1, options});
         circle.id = v4();
         roughElements.set(circle.id, roughElement)
         store.dispatch(addElement(circle));

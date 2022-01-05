@@ -2,6 +2,15 @@ import React from 'react'
 import Tooltip from '@mui/material/Tooltip';
 import SvgIcon from '@material-ui/core/SvgIcon';
 
+import rough from 'roughjs/bundled/rough.esm';
+import { store } from '../../../app/store';
+import { addElement, changeLastElement } from '../../../features/elementsSlice';
+import { v4 } from 'uuid';
+import roughElements from '../../../app/roughElements';
+
+import throttle from '../../../helpers/throttle'
+import bzCurve from '../../../helpers/bzCurve';
+import pickOptions from '../../../helpers/pickOptions';
 
 export function Eraser () {
     return (
@@ -13,10 +22,41 @@ export function Eraser () {
     )
 }
 
-const actions = {
-    handleMouseDown: (event) => {console.log('eraser down')},
-    handleMouseMove: (event) => {console.log('eraser move')},
-    handleMouseUp: (event) => {console.log('eraser up')}
+const generator = rough.generator();
+const optionList = []
+
+const createEraser = (args) => {
+    const {points, options} = args;
+    const path = bzCurve(points);
+    
+    const roughElement = generator.path(path, {
+        roughness: 0.5, strokeWidth: 8, ...options, stroke: "#ffffff"
+    });
+    return [{ id: null, shape: 'eraser', args }, roughElement];
 }
 
-export default { name: 'eraser', component: <Eraser/>, actions };
+
+const actions = {
+    handleMouseDown: ([x1, y1], tool) => {
+        const options = pickOptions(...optionList)(tool);
+        const [eraser,roughElement] = createEraser({points: [[x1, y1]], options});
+        eraser.id = v4();
+
+        roughElements.set(eraser.id, roughElement)
+        store.dispatch(addElement(eraser));
+    },
+    handleMouseMove: throttle(([x2, y2]) => {
+        const {id, args} = store.getState().elements.at(-1);
+        
+        const [eraser,roughElement] = createEraser(
+            {
+                ...args, 
+                points: [...args.points, [x2, y2]],
+            }
+        );
+        roughElements.set(id, roughElement);
+        store.dispatch(changeLastElement({...eraser, id}));
+    },30)
+}
+
+export default { name: 'eraser', component: <Eraser/>, actions, create: createEraser };
