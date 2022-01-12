@@ -2,6 +2,7 @@ import React, {useCallback, useRef, useEffect, useState} from 'react'
 import { useSelector, useDispatch } from 'react-redux';
 import rough from 'roughjs/bundled/rough.esm';
 import Paper from '@mui/material/Paper';
+import initResizeHandler from './initResizeHandler';
 import tools from '../ToolBar/tools';
 import './canvas.css';
 
@@ -11,6 +12,7 @@ import getPoint from '../../helpers/getPoint';
 import throttle from '../../helpers/throttle';
 import roughElements from '../../app/roughElements';
 
+import { elementsSelectors } from '../../features/elementsSlice';
 import { getSelectedBufferElement } from '../../features/selectedSlice';
 import { removeBufferElementById } from '../../features/bufferElementsSlice';
 import { addElement } from '../../features/elementsSlice';
@@ -29,36 +31,35 @@ export default function Canvas () {
     const bufferCanvasRef = useRef();
     const canvasRef = useRef();
 
-    useEffect(()=> {
-        if(containerRef.current) {
-            const resizeHandler = throttle(() => {
-                setCanvasArea({
-                    height: containerRef.current.clientHeight,
-                    width: containerRef.current.clientWidth
-                    
-                })
-            }, 1000);
-            resizeHandler();
-            window.addEventListener('resize', resizeHandler)
-        }
-    },[])
+    // Init Resize Handler
+    useEffect(()=> { if(containerRef.current) initResizeHandler(containerRef.current, setCanvasArea)},[]);
 
 
     const dispatch = useDispatch();
-    const {drawing, tool, elements, bufferElements} = useSelector(state => state);
-
+    const {drawing, tool, bufferElements} = useSelector(state => state);
+    const elements = useSelector(elementsSelectors.selectEntities);
     
     // MAIN CANVAS RENDERER
     useEffect(()=> {
         requestAnimationFrame(() => {
             const canvas = canvasRef.current
-            console.log('test')
             
             const ctx = canvasRef.current.getContext('2d');
             const rc = rough.canvas(canvas);
 
+            console.log(elements);
             ctx.clearRect(0, 0,canvas.width, canvas.height);
-            elements.forEach(({id}) => rc.draw(roughElements.get(id)));
+            Object.values(elements).forEach(({id, args, shape}) => {
+                if(!roughElements.has(id)) {
+                    console.log('client', )
+                    const shapeTool = tools.main.find(el=> el.name === shape)
+                    roughElements.set(id,shapeTool.create(args, id)[1]);
+                } 
+                    console.log('args',args)
+                    rc.draw(roughElements.get(id))
+                
+               
+            });
         })
     },[elements,canvasArea])
 
