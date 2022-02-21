@@ -10,7 +10,7 @@ export const elementsSlice = createSlice({
   initialState,
   reducers: {
     addElement: (state, action) => {
-      if(!action.method) socket.sync(action);
+      // if(!action.method) socket.sync(action);
         
       elementsAdapter.addOne(state, action.payload)
     },
