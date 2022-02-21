@@ -6,9 +6,9 @@ if(!localStorage.getItem("user_id")) localStorage.setItem('user_id', v4());
 class SketchSocket {
     constructor() {
         this.user_id = v4();
-        this.socket = new WebSocket(`ws://${window.location.hostname}:5000`);
-        this.socket.onopen = this.onopen;
-        this.socket.onmessage = this.onmessage;
+        // this.socket = new WebSocket(`ws://${window.location.hostname}:5000`);
+        // this.socket.onopen = this.onopen;
+        // this.socket.onmessage = this.onmessage;
     }
 
     send = (msg) => {
